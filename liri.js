@@ -103,7 +103,11 @@ function bandSearch(searchTerms) {
             console.log("\n--------------------Concert " + (i + 1) + "-------------------");
             console.log("Performers: " + response.data[i].lineup.join(", "));
             console.log("Venue: " + response.data[i].venue.name);
-            console.log("Location : " + response.data[i].venue.city + ", " + response.data[i].venue.country);
+                if (response.data[i].venue.region){
+                    console.log("Location : " + response.data[i].venue.city + ", " + response.data[i].venue.region + ", " + response.data[i].venue.country);
+                } else {
+                    console.log("Location : " + response.data[i].venue.city + ", " + response.data[i].venue.country);
+                };
             console.log("Time: " + response.data[i].datetime); //use moment to format this as "MM/DD/YYYY")   
             console.log("------------------------------------------------");
             }
