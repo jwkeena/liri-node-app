@@ -76,9 +76,9 @@ function spotifySearch(searchTerms) {
         secret: keys.spotify.secret
     });
     
-    // In case no movie is searched, search for Mr. Nobody
+    // In case no movie is searched, search for the greatest Queen song
     if (searchTerms === "") {
-        searchTerms = "the sign ace of base";
+        searchTerms = "don't stop me now queen";
     };
         
     spotify.search({ type: 'track', query: searchTerms }).then(function(response) {
@@ -123,6 +123,7 @@ function bandSearch(searchTerms) {
 
         if (response.data.length === 0) {
             console.log("No upcoming shows!");
+            searchAgain();
         } else {
 
             for (i = response.data.length - 1; i >= 0; i--) {
