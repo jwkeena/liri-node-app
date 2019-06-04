@@ -97,7 +97,7 @@ function bandSearch(searchTerms) {
     axios.get(queryURL).then(function(response) {
         
         if (response.data.length === 0) {
-            console.log("No upcoming concerts!")
+            console.log("No upcoming concerts!");
         } else {
             for (i = 0; i < response.data.length; i ++) {
             console.log("\n--------------------Concert " + (i + 1) + "-------------------");
@@ -132,12 +132,60 @@ function bandSearch(searchTerms) {
         });
 };
 
+function readFile(searchTerms) {
+    const fs = require("fs");
+
+    if (searchTerms === "") {
+        searchTerms = "random.txt";
+    }
+
+    fs.readFile(searchTerms, "utf8", function(error, data) {
+        if (error) {
+            return console.log(error);
+        } else {
+            let dataArr = data.split(";");
+            
+            // Format the array with no line breaks in bash by removing all line and space breaks
+            formattedDataArr = [];
+
+            for (i = 0; i < dataArr.length; i += 2) {
+                formattedDataArr.push(dataArr[i].trim());
+                formattedDataArr.push(dataArr[i + 1].trim());
+            }
+            
+            inquirer.prompt([
+                {
+                    type: "list",
+                    message: "What sort of entertainment would you like to search?",
+                    choices: formattedDataArr, // Pass all arguments in the .txt file to inquirer as choices
+                    name: "entertainmentChoice"
+                }
+
+            ]).then(function(resp) {
+
+                // Present all choices in the text file as choices for searching
+                newCommandArr = resp.entertainmentChoice.split(",");
+
+                if (newCommandArr[0] === "spotify-search") {
+                    spotifySearch(newCommandArr[1]);
+                } else if (newCommandArr[0] === "movie-search") {
+                    movieSearch(newCommandArr[1]);
+                } else if (newCommandArr[0] === "band-search") {
+                    // Remove quotation marks from string or the bands in town API won't accept it
+                    band = newCommandArr[1].replace(/['"]+/g, '')
+                    bandSearch(band);
+                };
+            });
+        };
+    });
+};
+
 // Processing user input
 inquirer.prompt([
     {
         type: "list",
         message: "What sort of entertainment would you like to search?",
-        choices: ["Movies", "Songs", "Bands", "Load .txt file"],
+        choices: ["Movies", "Songs", "Bands", "Read file"],
         name: "entertainmentChoice"
     }
 ]).then(function(resp) {
@@ -171,18 +219,15 @@ inquirer.prompt([
         ]).then(function(resp) {
             bandSearch(resp.band);
         });
-    } else if (resp.entertainmentChoice === "Load .txt file") {
-        console.log("Do what it says");
+    } else if (resp.entertainmentChoice === "Read file") {
+        inquirer.prompt([
+            {
+                type: "input",
+                message: "What is the name of the file you want to read? (default: random.txt)",
+                name: "file"
+            }
+        ]).then(function(resp) {
+            readFile(resp.file);
+        });
     };
 });
-
-
-// let input = process.argv;
-// let searchTerms = "";
-// for (var i = 3; i < input.length; i++) {
-//     if (i > 3 && i < input.length) {
-//       searchTerms = searchTerms + "+" + input[i];
-//     } else {
-//       searchTerms += input[i];
-//     }
-//   };
