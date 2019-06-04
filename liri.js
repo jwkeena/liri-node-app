@@ -70,8 +70,9 @@ function spotifySearch(searchTerms) {
     spotify.search({ type: 'track', query: searchTerms }).then(function(response) {
     data = response.tracks.items;
 
-    console.log("\n**************Top 5 Spotify Results**************")
-    for (i = 0; i < 5; i < i++) {
+    console.log("\n**************Top 3 Spotify Results**************")
+    // Run loop backwards to see top result first in terminal
+    for (i = 2; i >= 0; i < i--) {
         console.log("\n---------------Result " + (i + 1) + "------------------");
         console.log("Title: " + data[i].name);
         console.log("Artist: " + data[i].artists[0].name);
@@ -99,7 +100,8 @@ function bandSearch(searchTerms) {
         if (response.data.length === 0) {
             console.log("No upcoming concerts!");
         } else {
-            for (i = 0; i < response.data.length; i ++) {
+            // i = 2; i >= 0; i < i--
+            for (i = response.data.length - 1; i >= 0; i--) {
             console.log("\n--------------------Concert " + (i + 1) + "-------------------");
             console.log("Performers: " + response.data[i].lineup.join(", "));
             console.log("Venue: " + response.data[i].venue.name);
