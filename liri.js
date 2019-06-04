@@ -4,12 +4,13 @@ require("dotenv").config();
 // Import spotify api key
 const keys = require("./keys.js");
 
-// Import npm packages
+// Import packages
+const fs = require("fs");
 const inquirer = require("inquirer");
+const axios = require("axios");
 
 // Four main function definitions
 function movieSearch(searchTerms) {
-    const axios = require("axios");
     
     // In case no movie is searched, search for Mr. Nobody
     if (searchTerms === "") {
@@ -35,6 +36,19 @@ function movieSearch(searchTerms) {
         console.log(response.data.Plot);
         console.log(" *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *");
         console.log("------------------------------------------------");
+
+        // Log query to txt file
+        let text = "\r\nmovie-search," + '"' + searchTerms + '";';
+        fs.appendFile("savedsearches.txt", text, function (err) {
+            if (err) {
+                console.log("Search not saved to .txt file");
+                console.log(err);
+            } else {
+                console.log("Search saved!");
+            }
+        });
+
+        searchAgain();
         }).catch(function(error) {
             if (error.response) {
             // The request was made and the server responded with a status code that falls out of the range of 2xx
@@ -52,6 +66,7 @@ function movieSearch(searchTerms) {
             console.log("Error", error.message);
             }
             console.log(error.config);
+            searchAgain();
         });
 };
 
@@ -79,30 +94,43 @@ function spotifySearch(searchTerms) {
         console.log("Album: " + data[i].album.name);
         console.log("Album spotify link: " + data[i].album.external_urls.spotify);
         console.log("------------------------------------------------");
-    }
+    };
 
-  }).catch(function(err) {
-    console.log(err);
-  });
+    // Log query to txt file
+    let text = "\r\nspotify-search," + '"' + searchTerms + '";';
+    fs.appendFile("savedsearches.txt", text, function (err) {
+        if (err) {
+            console.log("Search not saved to .txt file");
+            console.log(err);
+        } else {
+            console.log("Search saved!");
+        }
+    });
+    searchAgain();
+
+    }).catch(function(err) {
+        console.log(err);
+        searchAgain();
+    });
 };
 
 function bandSearch(searchTerms) {
-    const axios = require("axios");
 
     if (searchTerms === "") {
         queryURL = "https://rest.bandsintown.com/artists/" + "M. Ward" + "/events?app_id=codingbootcamp";
     } else {
         queryURL = "https://rest.bandsintown.com/artists/" + searchTerms + "/events?app_id=codingbootcamp";
+        console.log(queryURL)
     };
 
     axios.get(queryURL).then(function(response) {
-        
+
         if (response.data.length === 0) {
-            console.log("No upcoming concerts!");
+            console.log("No upcoming shows!");
         } else {
-            // i = 2; i >= 0; i < i--
+
             for (i = response.data.length - 1; i >= 0; i--) {
-            console.log("\n--------------------Concert " + (i + 1) + "-------------------");
+            console.log("\n---------------------Show " + (i + 1) + "-------------------");
             console.log("Performers: " + response.data[i].lineup.join(", "));
             console.log("Venue: " + response.data[i].venue.name);
                 if (response.data[i].venue.region){
@@ -113,7 +141,20 @@ function bandSearch(searchTerms) {
             console.log("Time: " + response.data[i].datetime); //use moment to format this as "MM/DD/YYYY")   
             console.log("------------------------------------------------");
             }
-        };
+
+            // Log query to txt file
+            let text = "\r\nband-search," + '"' + searchTerms + '";';
+            fs.appendFile("savedsearches.txt", text, function (err) {
+                if (err) {
+                    console.log("Search not saved to .txt file");
+                    console.log(err);
+                } else {
+                    console.log("Search saved!");
+                }
+            });
+                searchAgain();
+            };
+
         }).catch(function(error) {
             if (error.response) {
             // The request was made and the server responded with a status code that falls out of the range of 2xx
@@ -131,6 +172,7 @@ function bandSearch(searchTerms) {
             console.log("Error", error.message);
             };
             console.log(error.config);
+            searchAgain();
         });
 };
 
@@ -138,7 +180,7 @@ function readFile(searchTerms) {
     const fs = require("fs");
 
     if (searchTerms === "") {
-        searchTerms = "random.txt";
+        searchTerms = "savedsearches.txt";
     }
 
     fs.readFile(searchTerms, "utf8", function(error, data) {
@@ -183,53 +225,73 @@ function readFile(searchTerms) {
 };
 
 // Processing user input
-inquirer.prompt([
-    {
-        type: "list",
-        message: "What sort of entertainment would you like to search?",
-        choices: ["Movies", "Songs", "Bands", "Read file"],
-        name: "entertainmentChoice"
-    }
-]).then(function(resp) {
-    if(resp.entertainmentChoice === "Movies") {
-        inquirer.prompt([
-            {
-                type: "input",
-                message: "Which movie are you interested in?",
-                name: "movie"
-            }
-        ]).then(function(resp) {
-            movieSearch(resp.movie);
-        });
-    } else if (resp.entertainmentChoice === "Songs") {
-        inquirer.prompt([
-            {
-                type: "input",
-                message: "Which song are you interested in?",
-                name: "song"
-            }
-        ]).then(function(resp) {
-            spotifySearch(resp.song);
-        });
-    } else if (resp.entertainmentChoice === "Bands") {
-        inquirer.prompt([
-            {
-                type: "input",
-                message: "Which band are you interested in?",
-                name: "band"
-            }
-        ]).then(function(resp) {
-            bandSearch(resp.band);
-        });
-    } else if (resp.entertainmentChoice === "Read file") {
-        inquirer.prompt([
-            {
-                type: "input",
-                message: "What is the name of the file you want to read? (default: random.txt)",
-                name: "file"
-            }
-        ]).then(function(resp) {
-            readFile(resp.file);
-        });
-    };
-});
+function askForInput() {
+    inquirer.prompt([
+        {
+            type: "list",
+            message: "What sort of entertainment would you like to search?",
+            choices: ["Movies", "Songs", "Bands", "Read file"],
+            name: "entertainmentChoice"
+        }
+    ]).then(function(resp) {
+        if(resp.entertainmentChoice === "Movies") {
+            inquirer.prompt([
+                {
+                    type: "input",
+                    message: "Which movie are you interested in?",
+                    name: "movie"
+                }
+            ]).then(function(resp) {
+                movieSearch(resp.movie);
+            });
+        } else if (resp.entertainmentChoice === "Songs") {
+            inquirer.prompt([
+                {
+                    type: "input",
+                    message: "Which song are you interested in?",
+                    name: "song"
+                }
+            ]).then(function(resp) {
+                spotifySearch(resp.song);
+            });
+        } else if (resp.entertainmentChoice === "Bands") {
+            inquirer.prompt([
+                {
+                    type: "input",
+                    message: "Which band or act are you interested in?",
+                    name: "band"
+                }
+            ]).then(function(resp) {
+                bandSearch(resp.band);
+            });
+        } else if (resp.entertainmentChoice === "Saved searches") {
+            inquirer.prompt([
+                {
+                    type: "input",
+                    message: "What would you like to search again?",
+                    name: "file"
+                }
+            ]).then(function(resp) {
+                readFile(resp.file);
+            });
+        };
+    });
+}
+
+function searchAgain() {
+    inquirer.prompt([
+        {
+            type: "confirm",
+            message: "Would you like to search again?",
+            name: "searchAgain"
+        }
+    ]).then(function(resp) {
+        if(resp.searchAgain) {
+            askForInput();
+        } else {
+            return;
+        }
+    })
+}
+
+askForInput();
