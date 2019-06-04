@@ -117,7 +117,6 @@ function bandSearch(searchTerms) {
         queryURL = "https://rest.bandsintown.com/artists/" + "M. Ward" + "/events?app_id=codingbootcamp";
     } else {
         queryURL = "https://rest.bandsintown.com/artists/" + searchTerms + "/events?app_id=codingbootcamp";
-        console.log(queryURL)
     };
 
     axios.get(queryURL).then(function(response) {
