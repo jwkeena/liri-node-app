@@ -1,15 +1,16 @@
 // Reads and sets any environment variables with the dotenv package
 require("dotenv").config();
 
-// Import api keys
+// Import spotify api key
 const keys = require("./keys.js");
-// Access keys information like so: const spotify = new Spotify(keys.spotify);
 
+// Import npm packages
 const inquirer = require("inquirer");
-const axios = require("axios");
 
 // Four main function definitions
-function movieThis(searchTerms) {
+function movieSearch(searchTerms) {
+    const axios = require("axios");
+    
     // In case no movie is searched, search for Mr. Nobody
     if (searchTerms === "") {
         queryURL = "http://www.omdbapi.com/?t=" + "Mr.Nobody" + "&y=&plot=short&apikey=trilogy"
@@ -19,7 +20,7 @@ function movieThis(searchTerms) {
 
     // OMDB API request via axios
     axios.get(queryURL).then(function(response) {
-        console.log("------------------------------------------------");
+        console.log("\n------------------OMDB Info------------------");
         console.log("Title:           " + response.data.Title);
         console.log("Rated:           " + response.data.Rated);
         console.log("Runtime:         " + response.data.Runtime);
@@ -54,6 +55,79 @@ function movieThis(searchTerms) {
         });
 };
 
+function spotifySearch(searchTerms) {
+    const Spotify = require("node-spotify-api");
+    const spotify = new Spotify({
+        id: keys.spotify.id,
+        secret: keys.spotify.secret
+    });
+    
+    // In case no movie is searched, search for Mr. Nobody
+    if (searchTerms === "") {
+        searchTerms = "the sign ace of base";
+    };
+        
+    spotify.search({ type: 'track', query: searchTerms }).then(function(response) {
+    data = response.tracks.items;
+
+    console.log("\n**************Top 5 Spotify Results**************")
+    for (i = 0; i < 5; i < i++) {
+        console.log("\n---------------Result " + (i + 1) + "------------------");
+        console.log("Title: " + data[i].name);
+        console.log("Artist: " + data[i].artists[0].name);
+        console.log("Album: " + data[i].album.name);
+        console.log("Album spotify link: " + data[i].album.external_urls.spotify);
+        console.log("------------------------------------------------");
+    }
+
+  }).catch(function(err) {
+    console.log(err);
+  });
+};
+
+function bandSearch(searchTerms) {
+    const axios = require("axios");
+
+    if (searchTerms === "") {
+        queryURL = "https://rest.bandsintown.com/artists/" + "M. Ward" + "/events?app_id=codingbootcamp";
+    } else {
+        queryURL = "https://rest.bandsintown.com/artists/" + searchTerms + "/events?app_id=codingbootcamp";
+    };
+
+    axios.get(queryURL).then(function(response) {
+        
+        if (response.data.length === 0) {
+            console.log("No upcoming concerts!")
+        } else {
+            for (i = 0; i < response.data.length; i ++) {
+            console.log("\n--------------------Concert " + (i + 1) + "-------------------");
+            console.log("Performers: " + response.data[i].lineup.join(", "));
+            console.log("Venue: " + response.data[i].venue.name);
+            console.log("Location : " + response.data[i].venue.city + ", " + response.data[i].venue.country);
+            console.log("Time: " + response.data[i].datetime); //use moment to format this as "MM/DD/YYYY")   
+            console.log("------------------------------------------------");
+            }
+        };
+        }).catch(function(error) {
+            if (error.response) {
+            // The request was made and the server responded with a status code that falls out of the range of 2xx
+            console.log("---------------Data---------------");
+            console.log(error.response.data);
+            console.log("---------------Status---------------");
+            console.log(error.response.status);
+            console.log("---------------Status---------------");
+            console.log(error.response.headers);
+            } else if (error.request) {
+            // If the request was made but no response was received
+            console.log(error.request);
+            } else {
+            // Something happened in setting up the request that triggered an Error
+            console.log("Error", error.message);
+            };
+            console.log(error.config);
+        });
+};
+
 // Processing user input
 inquirer.prompt([
     {
@@ -71,12 +145,28 @@ inquirer.prompt([
                 name: "movie"
             }
         ]).then(function(resp) {
-            movieThis(resp.movie);
+            movieSearch(resp.movie);
         });
     } else if (resp.entertainmentChoice === "Songs") {
-        console.log("searching songs");
+        inquirer.prompt([
+            {
+                type: "input",
+                message: "Which song are you interested in?",
+                name: "song"
+            }
+        ]).then(function(resp) {
+            spotifySearch(resp.song);
+        });
     } else if (resp.entertainmentChoice === "Bands") {
-        console.log("searching bands");
+        inquirer.prompt([
+            {
+                type: "input",
+                message: "Which band are you interested in?",
+                name: "band"
+            }
+        ]).then(function(resp) {
+            bandSearch(resp.band);
+        });
     } else if (resp.entertainmentChoice === "Load .txt file") {
         console.log("Do what it says");
     };
