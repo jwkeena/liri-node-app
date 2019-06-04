@@ -123,6 +123,14 @@ function bandSearch(searchTerms) {
 
         if (response.data.length === 0) {
             console.log("No upcoming shows!");
+            // Log query to txt file
+            let text = "\r\nband-search," + '"' + searchTerms + '";';
+            fs.appendFile("savedsearches.txt", text, function (err) {
+                if (err) {
+                    console.log("Search not saved to .txt file");
+                    console.log(err);
+                };
+            });
             searchAgain();
         } else {
 
