@@ -8,6 +8,7 @@ const keys = require("./keys.js");
 const fs = require("fs");
 const inquirer = require("inquirer");
 const axios = require("axios");
+const moment = require("moment");
 
 // Four main function definitions
 function movieSearch(searchTerms) {
@@ -134,7 +135,7 @@ function bandSearch(searchTerms) {
                 } else {
                     console.log("Location : " + response.data[i].venue.city + ", " + response.data[i].venue.country);
                 };
-            console.log("Time: " + response.data[i].datetime); //use moment to format this as "MM/DD/YYYY")   
+            console.log("Time: " + moment(response.data[i].datetime).format("MMMM Do YYYY, h:MM:ss a")); //use moment to format this as "MM/DD/YYYY");
             console.log("------------------------------------------------");
             }
 
