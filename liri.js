@@ -43,9 +43,7 @@ function movieSearch(searchTerms) {
             if (err) {
                 console.log("Search not saved to .txt file");
                 console.log(err);
-            } else {
-                console.log("Search saved!");
-            }
+            };
         });
 
         searchAgain();
@@ -102,9 +100,7 @@ function spotifySearch(searchTerms) {
         if (err) {
             console.log("Search not saved to .txt file");
             console.log(err);
-        } else {
-            console.log("Search saved!");
-        }
+        };
     });
     searchAgain();
 
@@ -148,9 +144,7 @@ function bandSearch(searchTerms) {
                 if (err) {
                     console.log("Search not saved to .txt file");
                     console.log(err);
-                } else {
-                    console.log("Search saved!");
-                }
+                };
             });
                 searchAgain();
             };
@@ -176,23 +170,18 @@ function bandSearch(searchTerms) {
         });
 };
 
-function readFile(searchTerms) {
-    const fs = require("fs");
+function readFile() {
 
-    if (searchTerms === "") {
-        searchTerms = "savedsearches.txt";
-    }
-
-    fs.readFile(searchTerms, "utf8", function(error, data) {
+    fs.readFile("savedsearches.txt", "utf8", function(error, data) {
         if (error) {
             return console.log(error);
         } else {
             let dataArr = data.split(";");
-            
+
             // Format the array with no line breaks in bash by removing all line and space breaks
             formattedDataArr = [];
 
-            for (i = 0; i < dataArr.length; i += 2) {
+            for (i = 0; i < dataArr.length - 1; i += 2) {
                 formattedDataArr.push(dataArr[i].trim());
                 formattedDataArr.push(dataArr[i + 1].trim());
             }
@@ -200,7 +189,7 @@ function readFile(searchTerms) {
             inquirer.prompt([
                 {
                     type: "list",
-                    message: "What sort of entertainment would you like to search?",
+                    message: "What would you like to search again?",
                     choices: formattedDataArr, // Pass all arguments in the .txt file to inquirer as choices
                     name: "entertainmentChoice"
                 }
@@ -230,7 +219,7 @@ function askForInput() {
         {
             type: "list",
             message: "What sort of entertainment would you like to search?",
-            choices: ["Movies", "Songs", "Bands", "Read file"],
+            choices: ["Movies", "Songs", "Bands", "Search history"],
             name: "entertainmentChoice"
         }
     ]).then(function(resp) {
@@ -264,16 +253,8 @@ function askForInput() {
             ]).then(function(resp) {
                 bandSearch(resp.band);
             });
-        } else if (resp.entertainmentChoice === "Saved searches") {
-            inquirer.prompt([
-                {
-                    type: "input",
-                    message: "What would you like to search again?",
-                    name: "file"
-                }
-            ]).then(function(resp) {
-                readFile(resp.file);
-            });
+        } else if (resp.entertainmentChoice === "Search history") {
+            readFile();
         };
     });
 }

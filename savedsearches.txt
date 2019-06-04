@@ -1,5 +1,1 @@
 spotify-search,"I Want it That Way";
-movie-search,"Inception";
-band-search,"Gregory Alan Isakov";
-movie-search,"memento";
-band-search,"brian regan";
